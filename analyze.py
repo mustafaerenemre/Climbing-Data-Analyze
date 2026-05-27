@@ -12,6 +12,22 @@ from sklearn.metrics import classification_report, confusion_matrix, accuracy_sc
 # 1. Load the dataset
 df = pd.read_csv('climber_df.csv')
 
+# Load grade conversion mapping
+grades_df = pd.read_csv('grades_conversion_table.csv')
+grade_map = dict(zip(grades_df['grade_id'], grades_df['grade_fra']))
+
+def format_grade_ticks(ax, axis='x'):
+    """Replaces numeric grade ticks with French grades like '7a', '6b+'"""
+    ticks = ax.get_yticks() if axis == 'y' else ax.get_xticks()
+    valid_ticks = [t for t in ticks if int(t) in grade_map and t >= 0]
+    labels = [grade_map[int(t)] for t in valid_ticks]
+    if axis == 'y':
+        ax.set_yticks(valid_ticks)
+        ax.set_yticklabels(labels)
+    else:
+        ax.set_xticks(valid_ticks)
+        ax.set_xticklabels(labels)
+
 print("--- Dataset Formatting ---")
 print(f"Rows: {df.shape[0]}, Columns: {df.shape[1]}")
 
@@ -106,6 +122,7 @@ sns.regplot(data=df, x='years_cl', y='grades_max',
 plt.title('Relationship Between Climbing Experience (Years) and Maximum Grade')
 plt.xlabel('Climbing Years (years_cl)')
 plt.ylabel('Maximum Grade (grades_max)')
+format_grade_ticks(plt.gca(), axis='y')
 plt.show()
 
 # Step 4: Grade Distribution by Gender
@@ -121,6 +138,7 @@ sns.histplot(data=df_plot, x='grades_max', hue='Gender', kde=True, bins=30,
 plt.title('1: Climbing Grade Distribution by Gender (By Population Size)')
 plt.xlabel('Maximum Grade (grades_max)')
 plt.ylabel('Number of People (Absolute Frequency)')
+format_grade_ticks(plt.gca(), axis='x')
 plt.show()
 
 # --- PLOT 4.2: Normalized Distribution (Within Itself) ---
@@ -132,6 +150,7 @@ sns.histplot(data=df_plot, x='grades_max', hue='Gender', kde=True, bins=30,
 plt.title('2: Proportional Climbing Grade Distribution by Gender (Normalized to Own Group)')
 plt.xlabel('Maximum Grade (grades_max)')
 plt.ylabel('Percentage (%) - Proportion within Own Gender')
+format_grade_ticks(plt.gca(), axis='x')
 plt.show()
 
 # --- CLASSIFICATION MODELS ---
